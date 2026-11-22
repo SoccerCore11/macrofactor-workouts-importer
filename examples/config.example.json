@@ -1,0 +1,19 @@
+{
+ "history_anchor": "Jan 1, 2026",
+ "rpe_to_rir": {
+  "7": 3,
+  "8": 2,
+  "9": 1,
+  "9.5": 1,
+  "10": 0
+ },
+ "rpe_note_for": [
+  "9.5"
+ ],
+ "distance_unit": "mi",
+ "km_to_mi": 0.621371192237334,
+ "session_note_prefix": "Session: ",
+ "felt_note": "Logged felt load: {lb} lb",
+ "app_bw": 150.0,
+ "workout_tab_regex": ""
+}

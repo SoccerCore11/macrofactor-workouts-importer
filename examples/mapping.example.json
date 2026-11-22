@@ -1,0 +1,34 @@
+{
+  "Squat (Barbell)": {
+    "target": "Barbell Back Squat",
+    "confidence": "high",
+    "sources": ["strong"]
+  },
+  "Pull Up": {
+    "target": "Overhand Grip Pull-Up",
+    "confidence": "high",
+    "sources": ["strong"],
+    "zero_load_is_bodyweight": true
+  },
+  "Pullup": {
+    "target": "Overhand Grip Pull-Up",
+    "confidence": "high",
+    "sources": ["progression"],
+    "mode": "bw_range",
+    "assisted_target": "Overhand Grip Machine-Assisted Pull-Up",
+    "bw_low": 140,
+    "bw_high": 160
+  },
+  "Archer Squat": {
+    "target": "Goblet Cossack Squat",
+    "confidence": "approximate",
+    "sources": ["progression"],
+    "loadless_target": "Bodyweight Cossack Squat"
+  },
+  "Running": {
+    "target": "Running",
+    "confidence": "high",
+    "sources": ["progression"],
+    "est_pace_min_per_km": 6.0
+  }
+}

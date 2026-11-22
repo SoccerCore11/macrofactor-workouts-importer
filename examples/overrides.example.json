@@ -1,0 +1,14 @@
+{
+ "progression-0123456789abcdef": {
+  "Weighted Bicycle Crunch": {
+   "reps": 15
+  }
+ },
+ "progression-fedcba9876543210": {
+  "_session": {
+   "start": "2019-05-04T18:00:00",
+   "dur": 3600,
+   "why": "timer left running overnight; sets span about an hour"
+  }
+ }
+}

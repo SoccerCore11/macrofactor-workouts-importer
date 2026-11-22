@@ -1,0 +1,14 @@
+# Personal workout data, ledgers and logs never belong in the repo
+data/
+*.csv
+*.sqlite3
+*.sqlite3-*
+*.log
+*.out
+*.jpg
+*.png
+STOP
+
+__pycache__/
+*.pyc
+.venv/
