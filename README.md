@@ -7,7 +7,7 @@
 MacroFactor Workouts has no import feature, API, or MCP server. This project enters past workouts
 through the Android app's own UI. It drives the screen over ADB (with
 [uiautomator2](https://github.com/openatx/uiautomator2) for fast UI dumps). Input is the CSV export
-from **Strong** and/or **Progression**. Each workout is entered as a normal finished workout with its
+from Strong and/or Progression. Each workout is entered as a normal finished workout with its
 original date, time, duration, exercises, set order, set types, loads, reps, time, distance, notes,
 and RIR (converted from RPE). Each one is then reopened and checked against the plan.
 
@@ -15,32 +15,32 @@ and RIR (converted from RPE). Each one is then reopened and checked against the 
 
 ## Built for one device
 
-All screen coordinates are hard-coded for a **Google Pixel Tablet, 2560×1600, landscape**. They
+All screen coordinates are hard-coded for a Google Pixel Tablet at 2560×1600 in landscape. They
 target the MacroFactor Workouts version available in early 2026. Other tablets, phones, orientations,
-display sizes, font scales, or app versions **will** need changes. Look at `mf.tap(x, y)` calls and
+display sizes, font scales, or app versions will need changes. Look at `mf.tap(x, y)` calls and
 the `n.c[0]`/`n.c[1]` position filters in `importer.py`. Most navigation uses text labels, but
 keypads, menus and table columns use positions. Watch the first few workouts closely.
 
-## Read this first
+## Before you run it
 
-- **Terms of service.** Automating the app's UI may be against MacroFactor's terms. Check them yourself.
-- **It changes the device clock.** The workout Start Time picker only goes back about 30 days.
+- Automating the app's UI may be against MacroFactor's terms. Check them yourself.
+- The importer changes the device clock. The workout Start Time picker only goes back about 30 days.
   So for each workout the importer turns off automatic time (`settings put global auto_time 0`) and
   sets the device clock to that workout's date. Other apps on the device will see a wrong date during
   the run. The importer restores automatic time at each month change and whenever `run` exits. If
   the process is killed, run `python mf.py clock auto` yourself.
-- **Sync can silently fail.** In one run, about 300 workouts saved under a backdated clock were
+- Sync can fail silently. In one run, about 300 workouts saved under a backdated clock were
   rejected by the server (`PERMISSION_DENIED` in logcat). The app then quietly removed them from the
   device. Now, at each month change, the importer returns the clock to real time and waits for the
-  upload. If logcat shows a rejected write, it stops. **Check another device** (e.g. your phone)
+  upload. If logcat shows a rejected write, it stops. Check another device (e.g. your phone)
   afterwards to make sure old workouts actually synced.
-- **App settings.** During the run, set Settings ▸ Workouts ▸ *Warm-Up Automation* to **None**, and
-  turn **off** *Propagate Changes* and *Use Rest Timers*. Note your original values first and restore
+- During the run, set Settings ▸ Workouts ▸ *Warm-Up Automation* to *None*, and turn off
+  *Propagate Changes* and *Use Rest Timers*. Note your original values first and restore
   them afterwards.
-- **Keep the screen awake.** The device locked mid-run once.
+- Keep the screen awake. The device locked mid-run once.
   `adb shell settings put global stay_on_while_plugged_in 7` keeps it on while charging. Set it back
   to `0` when done.
-- **You need an anchor workout.** At least one workout must already exist in MacroFactor that is
+- You need an anchor workout: at least one workout must already exist in MacroFactor that is
   *newer* than everything you import. The importer finds its entries just below that workout in
   History. Put that workout's date, exactly as History shows it (e.g. `"Jan 1, 2026"`), in
   `history_anchor`.
@@ -57,7 +57,7 @@ keypads, menus and table columns use positions. Watch the first few workouts clo
 All working files go in `./data/`, or in `MF_DATA_DIR` if set. This folder is git-ignored. It holds
 your personal training history.
 
-1. **Prepare.** Parse the exports into `data/manifest.json`, the ledger `data/progress.sqlite3`, and a
+1. Parse the exports into `data/manifest.json`, the ledger `data/progress.sqlite3`, and a
    blank `data/mapping.json`:
 
    ```sh
@@ -67,9 +67,9 @@ your personal training history.
    Also look at `data/timestamp-review.json`. It lists workouts whose times look wrong (for example, a
    timer left running). Fix those with overrides (below).
 
-2. **Config.** Copy `examples/config.example.json` to `data/config.json` and edit it (reference below).
+2. Copy `examples/config.example.json` to `data/config.json` and edit it (reference below).
 
-3. **Catalog.** Open the exercise chooser in the app with no filters, then run:
+3. Open the exercise chooser in the app with no filters, then run:
 
    ```sh
    python scrape_catalog.py
@@ -77,7 +77,7 @@ your personal training history.
 
    This writes `data/catalog.json`.
 
-4. **Map exercises.** Fill in exact name matches automatically:
+4. Map the exercises. `fill_mapping.py` fills in exact name matches:
 
    ```sh
    python fill_mapping.py
@@ -87,7 +87,7 @@ your personal training history.
    barbell vs dumbbell, chin-up vs pull-up, assisted vs not). When the match is approximate, the
    original name goes into the exercise note.
 
-5. **Dry run.** No device needed:
+5. Do a dry run, which needs no device:
 
    ```sh
    python importer.py plan <workout_id>
@@ -96,16 +96,16 @@ your personal training history.
    This prints exactly what will be entered. `python preflight.py` plans every pending workout and
    summarises the targets and any errors.
 
-6. **Import.**
+6. Import:
    - `python importer.py run 1` imports one workout. Watch it.
    - Then try bigger batches, e.g. `python importer.py run 50`.
    - Oldest workouts go first.
    - Create `data/STOP` to halt cleanly before the next workout.
 
-7. **Check.** `python scan_history.py` scrolls the whole History and compares per-date counts with
+7. Run `python scan_history.py`. It scrolls the whole History and compares per-date counts with
    the source. Then confirm a few old dates on another device.
 
-8. **Clean up.**
+8. Clean up:
    - `python mf.py clock auto`
    - Restore the app settings.
    - Turn off stay-awake.
@@ -122,27 +122,27 @@ workout.
 
 These are choices I made for my data. Check that they fit yours.
 
-- **Units.** The importer enters loads in **lb**, so set the app to pounds. kg loads are converted
+- The importer enters loads in lb, so set the app to pounds. kg loads are converted
   with 2.20462262185. The result is snapped to a whole, half or quarter pound only when that is within
   the precision the source recorded (so 45.359237 kg becomes 100 lb); otherwise it keeps 2 decimals.
   The logged load is entered as-is: no bar weight is added, and dumbbell weights are neither doubled
   nor halved.
-- **Set types.** Strong `W` becomes a warm-up and `F` becomes a failure set. A warm-up logged *after*
+- Strong `W` becomes a warm-up and `F` becomes a failure set. A warm-up logged *after*
   working sets is treated as a logging slip and moved first.
-- **RPE → RIR.** MacroFactor records RIR. The `rpe_to_rir` table maps RPE values to RIR. An RPE that
+- MacroFactor records RIR, not RPE. The `rpe_to_rir` table maps RPE values to RIR. An RPE that
   is not in the table stops the run until you add a rule for it. RPEs listed in `rpe_note_for` are
   also written into the set note, because the RIR loses detail for them.
-- **Notes.** Strong "Note" rows and Progression set/session comments become exercise notes. Session
+- Strong "Note" rows and Progression set/session comments become exercise notes. Session
   comments get `session_note_prefix` and go on the first exercise. Notes longer than the app's
   300-character limit are rejected.
-- **Bodyweight exercises.**
+- For bodyweight exercises:
   - `zero_load_is_bodyweight`: a 0 load means plain bodyweight, so no load is entered.
   - `mode: "bw_range"` is for sources that log *total* load, bodyweight included. Loads between
     `bw_low` and `bw_high` count as bodyweight. Loads below `bw_low` count as a machine-assisted
     "felt" load. Those go to `assisted_target` with assistance = the app's bodyweight share − felt load.
   - The app's bodyweight share for each exercise is learned into `data/bw-parts.json`. Until then it
     falls back to `app_bw`.
-- **Distance.** km values are converted to the app's unit with `km_to_mi`. If the target needs a
+- km distances are converted to the app's unit with `km_to_mi`. If the target needs a
   distance and the source only has time, `est_pace_min_per_km` estimates one and notes it.
 
 ### `data/config.json`
@@ -150,7 +150,7 @@ These are choices I made for my data. Check that they fit yours.
 | key | meaning |
 | --- | --- |
 | `history_anchor` | Date of the oldest workout already in MacroFactor, as History shows it, e.g. `"Jan 1, 2026"`. Required. |
-| `rpe_to_rir` | RPE → RIR table (string keys). |
+| `rpe_to_rir` | Maps RPE to RIR (string keys). |
 | `rpe_note_for` | RPE values also copied into the set note. |
 | `distance_unit`, `km_to_mi` | Distance unit used by the app and the km conversion factor. |
 | `session_note_prefix` | Prefix for session comments. |

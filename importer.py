@@ -82,7 +82,7 @@ def rir_for(rpe):
 
 def start_end(w):
     ov = OVERRIDES.get(w["id"], {}).get("_session")
-    if ov:  # user-approved reconstruction of sessions whose timer was left running or barely ran
+    if ov:  # reconstructed sessions whose timer was left running or barely ran
         return datetime.fromisoformat(ov["start"]), ov["dur"]
     rec = datetime.fromisoformat(w["recorded_datetime"].split(".")[0])
     dur = int(float(w["duration_seconds_values"][0])) if w["duration_seconds_values"] else None
@@ -149,9 +149,9 @@ def plan(w):
         elif lb == 0 and m.get("zero_load_is_bodyweight"):
             lb = None
         if lb is None and r.get("reps") not in ("", None) and m.get("mode") != "bw_range":
-            if m.get("loadless_target"):  # user decision: unloaded sets go to a bodyweight variant
+            if m.get("loadless_target"):  # unloaded sets go to a bodyweight variant
                 target = m["loadless_target"]
-            elif "Lb" in COLCACHE.get(target, []):  # user decision: target requires a load; enter 0 lb
+            elif "Lb" in COLCACHE.get(target, []):  # target requires a load; enter 0 lb
                 lb = 0
         b = block_for(r["exercise"], target, m)
         for ex, n in [x for x in pending_notes if x[0] == r["exercise"]]:
@@ -168,7 +168,7 @@ def plan(w):
             if r.get("distance_unit") != "km":
                 raise Mismatch(f"unexpected distance unit {r.get('distance_unit')}")
             s["dist"] = fmt_num(float(r["distance"]) * CFG["km_to_mi"])
-        if s["dist"] is None and s["seconds"] and m.get("est_pace_min_per_km"):  # user decision: target requires distance
+        if s["dist"] is None and s["seconds"] and m.get("est_pace_min_per_km"):  # target requires a distance; estimate it from time
             s["dist"] = fmt_num(s["seconds"] / 60 / m["est_pace_min_per_km"] * CFG["km_to_mi"])
             set_note.append("distance estimated")
         b["sets"].append(s)
@@ -177,11 +177,11 @@ def plan(w):
         s["note"] = "; ".join(set_note)
     if pending_notes:
         raise Mismatch(f"orphan exercise notes: {pending_notes}")
-    for b in blocks:  # user decision: warm-ups never follow working sets; a later W is a source logging slip
+    for b in blocks:  # warm-ups never follow working sets, so a later W is a logging slip in the source
         t = [st["type"] for st in b["sets"]]
         first_work = next((k for k, x in enumerate(t) if x != "W"), len(t))
         if "W" in t[first_work:]:
-            # user decision: the misplaced warm-up(s) go first, ahead of the warm-ups logged before the work
+            # misplaced warm-ups go first, ahead of the warm-ups logged before the work
             late = [st for st in b["sets"][first_work:] if st["type"] == "W"]
             b["sets"] = late + [st for st in b["sets"] if st["type"] == "W" and all(st is not x for x in late)] \
                 + [st for st in b["sets"] if st["type"] != "W"]
@@ -193,7 +193,7 @@ def plan(w):
             b["header"] = [CFG["session_note_prefix"] + n.strip()
                            for n in dict.fromkeys(w["session_notes"]) if n.strip()]
         compose_note(b)
-    for b in blocks:  # user-approved per-workout value decisions (overrides.json)
+    for b in blocks:  # per-workout corrections from overrides.json
         for k, v in OVERRIDES.get(w["id"], {}).get(b["target"], {}).items():
             for st in b["sets"]:
                 st[k] = v
@@ -619,7 +619,7 @@ def set_rows(nodes):
 
 
 def headers(nodes):
-    """Column headers, normalised: per-side columns (dumbbells) take logged values as-is (user-approved)."""
+    """Column headers, normalised: per-side columns (dumbbells) take logged values as-is."""
     hs = [n for n in nodes if n.label and 590 < n.c[1] < 640 and n.c[0] > 1000 and n.label not in ("Set",)]
     out = []
     for h in sorted(hs, key=lambda n: n.c[0]):
@@ -653,7 +653,7 @@ def field_value(h, s):
         return None if s["seconds"] is None else time_digits(s["seconds"])
     if h == "Mi":
         return s["dist"]
-    if h == "Yd":  # user decision: carries logged as reps go into Yd
+    if h == "Yd":  # carries logged as reps go into Yd
         return None if s["reps"] is None else str(s["reps"])
     raise Mismatch(f"unsupported column {h}")
 
@@ -664,7 +664,7 @@ def describe(k, s):
 
 
 def fit_columns(hs, b):
-    """Values with no target column move into the set's note (user-approved)."""
+    """Values with no target column move into the set's note."""
     cols = set(hs)
     unknown = cols - set(COLS.values()) - {"Yd"}
     if unknown:
@@ -684,7 +684,7 @@ def enter_block(i, b):
     hs = headers(nodes)
     remember_columns(b["target"], hs)
     unit = next((u for u in ("km", "Yd") if u in hs), None)
-    if unit and (unit == "km" or any(s["dist"] is not None for s in b["sets"])):  # user chose miles
+    if unit and (unit == "km" or any(s["dist"] is not None for s in b["sets"])):  # distances are entered in miles
         mf.tap_node([n for n in nodes if n.label == unit and 590 < n.c[1] < 640][0], pause=0.8)
         mf.tap_label(r"^Mi$", pause=1.0)
         nodes = goto_tab(i, b["target"])
@@ -1294,7 +1294,7 @@ BW_PARTS = json.load(open(BW_PARTS_F, encoding="utf-8")) if os.path.exists(BW_PA
 
 
 def apply_bw_part(nodes, b):
-    """Assistance = app bodyweight share - felt load (user decision). The live workout chip disagrees with the
+    """Assistance = app bodyweight share - felt load. The live workout chip disagrees with the
     share used in saved workouts, so use the share measured from verified saved detail (bw-parts.json)."""
     if not any(s.get("felt") is not None for s in b["sets"]):
         return
@@ -1394,7 +1394,7 @@ def fix_assisted(wid, bw=None):
 
 
 def verify_saved(wid, on_complete=False, already_open=False):
-    """Read back the saved workout: on the post-finish Workout Complete screen (user-approved), or via History."""
+    """Read back the saved workout: on the post-finish Workout Complete screen, or via History."""
     w = WORKOUTS[wid]
     blocks = plan(w)
     for b in blocks:
@@ -1522,7 +1522,7 @@ def run_one(wid):
             if (attempt == 1 and st == "saved_mismatch" and new  # share follows the app's dated bodyweight, so it can change
                     and new <= set(MEASURED_BW) and len({MEASURED_BW[t] for t in new}) == 1
                     and any("app bodyweight" in p for p in msg.split("; "))):
-                try:  # user-approved: adopt the app's measured share for this date and fix in place
+                try:  # adopt the app's measured share for this date and fix in place
                     mf.tap_label(r"^Done$", timeout=15, pause=1.5)
                     fix_assisted(wid, MEASURED_BW[next(iter(new))])
                     break

@@ -78,7 +78,7 @@ _TIMER_RE = re.compile(r'"\d+:\d\d:\d\d"')
 
 
 def _u2_xml():
-    """Fast hierarchy dump via the uiautomator2 on-device agent (user-approved; ~0.15 s vs ~2.2 s).
+    """Fast hierarchy dump via the uiautomator2 on-device agent (~0.15 s vs ~2.2 s with plain adb).
     Waits until two consecutive dumps agree, since the old slow dump implicitly let transitions finish."""
     global _U2
     if _U2 is None:
