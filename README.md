@@ -13,7 +13,7 @@ and RIR (converted from RPE). Each one is then reopened and checked against the 
 
 [scrcpy](https://github.com/Genymobile/scrcpy) is handy for watching it run on a PC via screen mirroring. It also bundles `adb`.
 
-## Built for one device
+## Tested Device Type
 
 All screen coordinates are hard-coded for a Google Pixel Tablet at 2560×1600 in landscape. They
 target the MacroFactor Workouts version available in early 2026. Other tablets, phones, orientations,
