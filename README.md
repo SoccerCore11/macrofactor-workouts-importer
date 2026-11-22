@@ -13,7 +13,13 @@ and RIR (converted from RPE). Each one is then reopened and checked against the 
 
 [scrcpy](https://github.com/Genymobile/scrcpy) is handy for watching it run on a PC via screen mirroring. It also bundles `adb`.
 
-## Tested Device Type
+## My Setup
+
+I imported 800 workouts, with history going back to Fall 2015. 
+The import ran for about 5 days across multiple runs, including pauses, troubleshooting, and sync checks. In the logs, the median time from
+starting a workout to verifying it was about 2 minutes 8 seconds. At that rate, 800 workouts would
+take roughly 28.5 hours of device time, before setup and retries. Workout size and device
+responsiveness will affect the pace.
 
 All screen coordinates are hard-coded for a Google Pixel Tablet at 2560×1600 in landscape. They
 target the MacroFactor Workouts version available in early 2026. Other tablets, phones, orientations,
