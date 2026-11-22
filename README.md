@@ -6,12 +6,12 @@
 
 MacroFactor Workouts has no import feature, API, or MCP server. This project enters past workouts
 through the Android app's own UI. It drives the screen over ADB (with
-[uiautomator2](https://github.com/openatx/uiautomator2) for fast UI dumps). Input is the CSV export
-from Strong and/or Progression. Each workout is entered as a normal finished workout with its
+[uiautomator2](https://github.com/openatx/uiautomator2) for fast UI dumps). Input is a CSV export
+(exports from Strong and Progression for me). Each workout is entered as a normal finished workout with its
 original date, time, duration, exercises, set order, set types, loads, reps, time, distance, notes,
 and RIR (converted from RPE). Each one is then reopened and checked against the plan.
 
-[scrcpy](https://github.com/Genymobile/scrcpy) is handy for watching it run. It also bundles `adb`.
+[scrcpy](https://github.com/Genymobile/scrcpy) is handy for watching it run on a PC via screen mirroring. It also bundles `adb`.
 
 ## Built for one device
 
@@ -24,7 +24,7 @@ keypads, menus and table columns use positions. Watch the first few workouts clo
 ## Before you run it
 
 - Automating the app's UI may be against MacroFactor's terms. Check them yourself.
-- The importer changes the device clock. The workout Start Time picker only goes back about 30 days.
+- The importer changes the device clock. The workout Start Time picker in MF only goes back about 30 days.
   So for each workout the importer turns off automatic time (`settings put global auto_time 0`) and
   sets the device clock to that workout's date. Other apps on the device will see a wrong date during
   the run. The importer restores automatic time at each month change and whenever `run` exits. If
@@ -32,12 +32,12 @@ keypads, menus and table columns use positions. Watch the first few workouts clo
 - Sync can fail silently. In one run, about 300 workouts saved under a backdated clock were
   rejected by the server (`PERMISSION_DENIED` in logcat). The app then quietly removed them from the
   device. Now, at each month change, the importer returns the clock to real time and waits for the
-  upload. If logcat shows a rejected write, it stops. Check another device (e.g. your phone)
+  upload. If logcat shows a rejected write, it stops. Check another device with the same MF app and account
   afterwards to make sure old workouts actually synced.
 - During the run, set Settings ▸ Workouts ▸ *Warm-Up Automation* to *None*, and turn off
   *Propagate Changes* and *Use Rest Timers*. Note your original values first and restore
   them afterwards.
-- Keep the screen awake. The device locked mid-run once.
+- Keep the screen awake to avoid the device getting locked mid-run.
   `adb shell settings put global stay_on_while_plugged_in 7` keeps it on while charging. Set it back
   to `0` when done.
 - You need an anchor workout: at least one workout must already exist in MacroFactor that is
@@ -49,7 +49,7 @@ keypads, menus and table columns use positions. Watch the first few workouts clo
 
 - Python 3.10+
 - `pip install -r requirements.txt`
-- `adb` on `PATH` (or set `MF_ADB` to its full path), USB debugging on, device authorised
+- `adb` on `PATH` (or set `MF_ADB` to its full path), USB debugging on, device authorized
 - MacroFactor Workouts installed and signed in, on the Workout tab
 
 ## Workflow
@@ -94,7 +94,7 @@ your personal training history.
    ```
 
    This prints exactly what will be entered. `python preflight.py` plans every pending workout and
-   summarises the targets and any errors.
+   summarizes the targets and any errors.
 
 6. Import:
    - `python importer.py run 1` imports one workout. Watch it.
